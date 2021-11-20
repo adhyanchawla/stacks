@@ -1,5 +1,8 @@
 import java.util.LinkedList;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.PriorityQueue;
 
 public class questions {
     
@@ -392,5 +395,235 @@ public class questions {
         }
         return max;
     }
+
+    //lc 402
+    public String removeKdigits(String s, int k) {
+        
+        int n = s.length();
+        ArrayList<Character>st = new ArrayList<>();
+    
+        
+        for(int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+        while(st.size() != 0 && st.get(st.size() - 1) > ch && k > 0) {
+            st.remove(st.size() - 1);
+                k--;
+            }
+            st.add(ch);
+        }
+        
+        while(k-- != 0) {
+            st.remove(st.size() - 1);
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        boolean flag = false;
+        for(Character ch : st) {
+            if(ch == '0' && !flag) continue;
+            flag = true;
+            sb.append(ch);
+        }
+        
+        String ans = sb.length() != 0 ? sb.toString() : "0";
+        return ans;
+        
+    }
+
+    //316, 1081
+    public String removeDuplicateLetters(String s) {
+        int n = s.length();
+        
+        int[] freq = new int[26];
+        
+        for(int i = 0; i < n; i++) freq[s.charAt(i) - 'a']++;
+        
+        boolean[] vis = new boolean[26];
+        LinkedList<Character>st = new LinkedList<>();
+        
+        for(int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            freq[ch - 'a']--;
+            if(vis[ch - 'a']) continue;
+            
+            while(st.size() != 0 && st.getFirst() > ch && freq[st.getFirst() - 'a'] > 0) {
+                vis[st.getFirst() - 'a'] = false;
+                st.removeFirst();
+            }
+            
+            vis[ch - 'a'] = true;
+            st.addFirst(ch);   
+            
+
+        }
+        
+        StringBuilder ans = new StringBuilder();
+        while(st.size() != 0) {
+            ans.append(st.removeLast()); 
+        }
+        return ans.toString();
+    }
+
+    //1249
+    public String minRemoveToMakeValid(String s) {
+        int n = s.length();
+        LinkedList<Integer>st = new LinkedList<>();
+        
+        for(int i = 0; i < n; i++) {
+            char ch = s.charAt(i);
+            if(ch == '(') {
+                st.addFirst(i);
+            } else if(ch == ')') {
+                if(st.size() > 0 && s.charAt(st.getFirst()) == '(') {
+                    st.removeFirst();
+                } else if(st.size() > 0 && s.charAt(st.getFirst()) == ')') {
+                    st.addFirst(i);
+                } else if(st.size() == 0) {
+                    st.addFirst(i);
+                } 
+            }
+        }
+        
+        
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < n; i++) {
+            if(st.size() > 0 && st.getLast() == i) {
+                st.removeLast();
+                continue;
+            }
+            
+            sb.append(s.charAt(i));
+        }
+        
+        return sb.toString();
+    }
+
+    //895
+    class FreqStack {
+    
+        private PriorityQueue<pair>pq;
+        private HashMap<Integer, Integer> map;
+        private int idx = 0;
+        
+        public class pair implements Comparable<pair>{
+            int val = 0;
+            int idx = 0;
+            int freq = 0;
+            
+            pair(int val, int idx, int freq) {
+                this.val = val;
+                this.idx = idx;
+                this.freq = freq;
+            }
+            
+            public int compareTo(pair o) {
+                if(this.freq == o.freq)
+                return o.idx - this.idx;
+                else return o.freq - this.freq;
+            }
+        }
+        
+        public FreqStack() {
+            pq = new PriorityQueue<>();
+            map = new HashMap<>();
+        }
+        
+        public void push(int val) {
+            map.put(val, map.getOrDefault(val, 0) + 1);
+            pq.add(new pair(val, idx++, map.get(val)));
+        }
+        
+        public int pop() {
+            pair rp = pq.remove();
+            map.put(rp.val, map.get(rp.val) - 1);
+            if(map.get(rp.val) == 0) {
+                map.remove(rp.val);
+            }
+            return rp.val;
+        }
+    }
+
+    class FreqStack_ {
+
+        private ArrayList<LinkedList<Integer>> freqMap;
+             private HashMap<Integer, Integer> map;
+             private int maxFreq = 0;
+     
+             public FreqStack_() {
+                 freqMap = new ArrayList<>();
+                 map = new HashMap<>();
+     
+                 freqMap.add(new LinkedList<>());
+             }
+     
+             public void push(int val) {
+                 map.put(val, map.getOrDefault(val, 0) + 1);
+                 maxFreq = Math.max(maxFreq, map.get(val));
+     
+                 if (maxFreq == freqMap.size())
+                     freqMap.add(new LinkedList<>());
+     
+                 freqMap.get(map.get(val)).addFirst(val);
+             }
+     
+             public int pop() {
+                 int rv = freqMap.get(maxFreq).removeFirst();
+                 if (freqMap.get(maxFreq).size() == 0) {
+                     freqMap.remove(maxFreq--);
+                 }
+     
+                 map.put(rv, map.get(rv) - 1);
+                 if (map.get(rv) == 0)
+                     map.remove(rv);
+     
+                 return rv;
+             }
+     }
+
+     //155
+     class MinStack {
+    
+        private LinkedList<Long>st;
+        private long minSoFar = 0;
+        
+        public MinStack() {
+            st = new LinkedList<>();
+        }
+        
+        public void push(int val) {
+            long x = val;
+            if(st.size() == 0) {
+                st.addFirst(x);
+                minSoFar = x;
+                return;
+            }
+            
+            if(x < minSoFar) {
+                st.addFirst(2 * x - minSoFar);
+                minSoFar = x;
+            } else {
+                st.addFirst(x);
+            }
+        }
+        
+        public void pop() {
+            if(st.getFirst() < minSoFar) {
+                minSoFar = 2 * minSoFar - st.getFirst();
+            }
+            st.removeFirst();
+        }
+        
+        public int top() {
+            if(st.getFirst() < minSoFar) {
+                return (int)minSoFar;
+            }
+            
+            return (int)(long)st.getFirst();
+        }
+        
+        public int getMin() {
+            return (int)minSoFar;
+        }
+    }
+     
 
 }
