@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
+import java.util.List;
 
 public class questions {
     
@@ -623,6 +624,63 @@ public class questions {
         public int getMin() {
             return (int)minSoFar;
         }
+    }
+
+    //636
+    public int[] exclusiveTime(int n, List<String> logs) {
+        class logPair {
+            int id = 0, timestamp = 0, sleeptime = 0;
+            boolean isStart = false;
+            logPair(String s) {
+                String[] ar = s.split(":");
+                this.id = Integer.parseInt(ar[0]);
+                this.timestamp = Integer.parseInt(ar[2]);
+                this.isStart = ar[1].equals("start");
+                this.sleeptime = 0;
+            }
+        }
+        
+        int[] ans = new int[n];
+        LinkedList<logPair> st = new LinkedList<>();
+        
+        for(String s : logs) {
+            logPair log = new logPair(s);
+            if(log.isStart) {
+                st.addFirst(log);
+            } else {
+                logPair rp = st.removeFirst();
+                ans[rp.id] += log.timestamp - rp.timestamp + 1 - rp.sleeptime;
+                if(st.size() != 0)
+                    st.getFirst().sleeptime += log.timestamp - rp.timestamp + 1;    
+            }
+        }
+        return ans;
+    }
+
+    //853
+    public int carFleet(int target, int[] position, int[] speed) {
+        int n = position.length;
+        double[][] distancetime = new double[n][2];
+        
+        for(int i = 0; i < n; i++) {
+            distancetime[i][0] = position[i] * 1.0;
+            distancetime[i][1] = (target - position[i] * 1.0) / (speed[i]);
+        }
+        
+        Arrays.sort(distancetime, (a, b)-> {
+            return (int)(a[0] - b[0]);
+        });
+        
+        double previoustime = distancetime[n - 1][1];
+        
+        int carFleet = 1;
+        for(int i = n - 2; i >= 0; i--) {
+            if(distancetime[i][1] > previoustime) {
+                previoustime = distancetime[i][1];
+                carFleet++;
+            }
+        }
+        return carFleet;
     }
      
 
